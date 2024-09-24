@@ -1,0 +1,82 @@
+{% load django_bootstrap5 %}
+{% load widget_tweaks %}
+{% load static %}
+
+{{ versions|json_script:"versions" }}
+{{ processes|json_script:"processes" }}
+
+<form method="post" action="">
+    {% csrf_token %}
+
+    <input type="hidden" name="submit_token" value="{{ submit_token }}" />
+
+    <div class="modal-header">
+        <h3 class="modal-title">開発項目追加</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <div class="modal-body">
+        {% for field in form %}
+        <div class="form-group mb-3">
+            {% if not "due_date" in field.name and not "todo" in field.name %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {% if field.errors %}
+            {% render_field field class="form-control is-invalid" placeholder=field.label %}
+            {% else %}
+            {% render_field field class="form-control" %}
+            {% endif %}
+            <div class="{% if field.errors %}invalid invalid-feedback{% endif %}">
+                {% for error in field.errors %}
+                <p class="help-block">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <div class="form-group">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">プロセス</th>
+                        <th scope="col">実施</th>
+                        <th scope="col">期限</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for process in processes %}
+                    <tr>
+                        <td>{{ process.name }}</td>
+                        {% with forloop.counter|stringformat:"s" as counter %}
+                        {% with "todo_"|add:counter as todo_field %}
+                        {% with "due_date_"|add:counter as due_date_field %}
+                        {% for field in form %}
+                        {% if field.name == todo_field or field.name == due_date_field%}
+                        <td>
+                            {% if field.errors %}
+                            {% render_field field class="form-control is-invalid" %}
+                            {% else %}
+                            {% render_field field class="form-control" %}
+                            {% endif %}
+                            <div class="{% if field.errors %}invalid invalid-feedback{% endif %}">
+                                {% for error in field.errors %}
+                                <p class="help-block">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        {% endif %}
+                        {% endfor %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+        <button type="submit" class="submit-btn btn btn-dark">実行</button>
+    </div>
+</form>

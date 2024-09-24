@@ -1,0 +1,28 @@
+.menu {
+    &:hover {
+        background-color: #F5F5F5;
+    }
+}
+
+.menu-title {
+    font-size: 1.2rem;
+}
+
+.menu-description {
+    font-size: 0.9em;
+    color: gray;
+}
+
+// TODO: ‘I‘ğ‚µ‚½‚ç˜gü‚ğ•t‚¯‚é
+#link {
+    button {
+        border: 1px solid #DEE2E6;
+        &:hover {
+            background-color: #F5F5F5;
+        }
+    }
+}
+
+.modal-header {
+    background-color: #9FD4FF;
+}

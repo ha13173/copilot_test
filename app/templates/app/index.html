@@ -1,0 +1,189 @@
+{% extends "app/layout.html" %}
+
+{% load static %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="{% static 'app/scripts/func.js' %}"></script>
+
+<link rel="stylesheet" type="text/css" href="{% static 'app/content/index.css' %}">
+
+<div class="row justify-content-center">
+    <div class="col-6">
+        <div id="link" class="input-group m-3">
+            <input id="url"
+                type="text"
+                class="form-control"
+                placeholder="Redmine URL"
+                aria-label="Redmine URL"
+                aria-describedby="clipboard-btn"
+                value="{{ redmine_url }}"
+                readonly
+            >
+            <!--TODO: ツールチップの出し方変える-->
+            <button id="clipboard-btn"
+                class="btn"
+                type="button"
+                data-clipboard-demo=""
+                data-clipboard-target="#url"
+                data-bs-toggle="tooltip"
+                data-bs-placement="bottom"
+                title="リンクをコピー"
+            >
+                <i class="far fa-clipboard fa-lg"></i>
+            </button>
+            <button class="btn"
+                type="button"
+                onclick="window.open('{{ redmine_url }}')"
+                target="_blank"
+                title="リンクを開く"
+            >
+                <i class="fas fa-arrow-up-right-from-square"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row flex-nowrap">
+    <div class="col-6 border rounded d-flex menu" id="start-development">
+        <div class="row py-3 align-middle align-items-center w-100">
+            <div class="col-3 text-center">
+                <img src="{% static 'app/images/start-develop.png' %}" class="d-inline-block align-top" alt="">
+            </div>
+            <div class="col-9">
+                <div class="menu-title">開発開始</div>
+                <div class="mt-2 menu-description">
+                    開発対象ソフトウェア、バージョン、必要なプロセスなどを指定し、新たに開発を開始します。<br />
+                    Redmine上でバージョン、プロジェクトの代表チケット、各プロセスのチケットなどが作成されます。
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 border rounded ms-3 d-flex menu" id="add-issue">
+        <div class="row py-3 align-middle align-items-center w-100">
+            <div class="col-3 text-center">
+                <img src="{% static 'app/images/add-issue.png' %}" class="d-inline-block align-top" alt="">
+            </div>
+            <div class="col-9">
+                <div class="menu-title">開発項目追加</div>
+                <div class="mt-2 menu-description">
+                    開発対象ソフトウェア、バージョン、開発項目名などを指定し、開発項目を追加します。<br />
+                    Redmine上で開発項目の代表チケット、各プロセスのチケットなどが作成されます。
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mt-3 flex-nowrap">
+    <div class="col-6 border rounded d-flex menu" id="list-developments">
+        <div class="row py-3 align-middle align-items-center w-100">
+            <div class="col-3 text-center">
+                <img src="{% static 'app/images/list-developments.png' %}" class="d-inline-block align-top" alt="">
+            </div>
+            <div class="col-9">
+                <div class="menu-title">開発中プロジェクト一覧</div>
+                <div class="mt-2 menu-description">
+                    開発中のプロジェクト一覧とそのリンクを表示します。
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 border rounded ms-3 d-flex menu" id="export-checklist">
+        <div class="row py-3 align-middle align-items-center w-100">
+            <div class="col-3 text-center">
+                <img src="{% static 'app/images/export-checklist.png' %}" class="d-inline-block align-top" alt="">
+            </div>
+            <div class="col-9">
+                <div class="menu-title">チェックリストPDF出力</div>
+                <div class="mt-2 menu-description">
+                    開発対象ソフトウェア、バージョンなどを指定し、Redmineチケットに記載してあるチェックリストをPDF出力します。<br />
+                    Redmine上の各開発項目について、代表チケットのWeb画面をPDFで印刷します。
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mt-3 flex-nowrap">
+    <div class="col-6 border rounded d-flex menu" id="export-codereview-result">
+        <div class="row py-3 align-middle align-items-center w-100">
+            <div class="col-3 text-center">
+                <img src="{% static 'app/images/export-codereview-result.png' %}" class="d-inline-block align-top" alt="">
+            </div>
+            <div class="col-9">
+                <div class="menu-title">コードレビュー結果PDF出力</div>
+                <div class="mt-2 menu-description">
+                    開発対象ソフトウェア、バージョンなどを指定し、コードレビュー結果をPDF出力します。<br />
+                    GitLabの各マージリクエストについて、Web画面をPDFで印刷し、1つのPDFファイルに結合します。
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 rounded d-flex"></div>
+</div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="modal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'app/scripts/modal.js' %}"></script>
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', async (e) => {
+        download_uuid = "{{ download_uuid }}";
+        if (download_uuid != 'None') {
+            var response = await fetch("{% url 'download_file' download_uuid %}");
+            var blob = await response.blob();
+            var newBlob = new Blob([blob]);
+            if (newBlob.size > 0) {
+                var objUrl = window.URL.createObjectURL(newBlob);
+                var link = document.createElement("a");
+                link.href = objUrl;
+                link.download = 'data.zip';
+                link.click();
+            }
+        }
+
+        modalForm(document.getElementById('start-development'), {
+            formURL: "{% url 'start_development' %}"
+        });
+        modalForm(document.getElementById('add-issue'), {
+            formURL: "{% url 'add_issue' %}"
+        });
+        modalForm(document.getElementById('list-developments'), {
+            formURL: "{% url 'list_developments' %}"
+        });
+        modalForm(document.getElementById('export-checklist'), {
+            formURL: "{% url 'export_checklist' %}"
+        });
+        modalForm(document.getElementById('export-codereview-result'), {
+            formURL: "{% url 'export_codereview_result' %}"
+        });
+        $('#start-development').on('click', function () {
+            $('.loading').removeClass('hide');
+        });
+        $('#add-issue').on('click', function () {
+            $('.loading').removeClass('hide');
+        });
+        $('#list-developments').on('click', function () {
+            $('.loading').removeClass('hide');
+        });
+        $('#export-checklist').on('click', function () {
+            $('.loading').removeClass('hide');
+        });
+        $('#export-codereview-result').on('click', function () {
+            $('.loading').removeClass('hide');
+        });
+        $('form').submit(function () {
+            $('.loading').removeClass('hide');
+        })
+        $('.submit-btn').on('click', function () {
+            $('.loading').removeClass('hide');
+        });
+    });
+
+    let clipboard_btn = document.getElementById('clipboard-btn');
+    let clipboard = new ClipboardJS(clipboard_btn);
+</script>
+{% endblock %}

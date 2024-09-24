@@ -1,0 +1,13 @@
+*.pyc
+db.sqlite3
+.vs/
+env/
+*.user
+*.suo
+.DS_Store
+.sass-cache/
+*.css.map
+/static/
+obj/
+/logs/*.log
+/ExportPdf/
